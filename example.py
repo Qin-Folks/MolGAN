@@ -1,3 +1,10 @@
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+
+from rdkit import RDLogger
+lg = RDLogger.logger()
+lg.setLevel(RDLogger.CRITICAL)
+
 import tensorflow as tf
 
 from utils.sparse_molecular_dataset import SparseMolecularDataset
@@ -9,18 +16,18 @@ from models import encoder_rgcn, decoder_adj, decoder_dot, decoder_rnn
 
 from optimizers.gan import GraphGANOptimizer
 
-batch_dim = 128
+batch_dim = 5120
 la = 1
 dropout = 0
 n_critic = 5
 metric = 'validity,sas'
 n_samples = 5000
 z_dim = 8
-epochs = 10
-save_every = None
+epochs = 1000
+save_every = 20
 
 data = SparseMolecularDataset()
-data.load('data/gdb9_9nodes.sparsedataset')
+data.load('../MolGAN-pytorch/data/gdb9_9nodes.sparsedataset')
 
 steps = (len(data) // batch_dim)
 
@@ -199,6 +206,11 @@ trainer = Trainer(model, optimizer, session)
 
 print('Parameters: {}'.format(np.sum([np.prod(e.shape) for e in session.run(tf.trainable_variables())])))
 
+
+def best_fn(results):
+    return results['valid score']
+
+
 trainer.train(batch_dim=batch_dim,
               epochs=epochs,
               steps=steps,
@@ -209,6 +221,8 @@ trainer.train(batch_dim=batch_dim,
               test_fetch_dict=test_fetch_dict,
               test_feed_dict=test_feed_dict,
               save_every=save_every,
-              directory='', # here users need to first create and then specify a folder where to save the model
+              best_fn=best_fn,
+              directory='../MolGAN_TF_exps',
+              # here users need to first create and then specify a folder where to save the model
               _eval_update=_eval_update,
               _test_update=_test_update)

@@ -19,7 +19,7 @@ class Trainer:
     def log(msg='', date=True):
         print(str(datetime.now().strftime('%Y-%m-%d %H:%M:%S')) + ' ' + str(msg) if date else str(msg))
 
-    def save(self, directory):
+    def save(self, directory, is_best=False):
         saver = tf.train.Saver()
 
         dirs = directory.split('/')
@@ -29,8 +29,13 @@ class Trainer:
         for d in mkdirs:
             os.makedirs(d)
 
-        saver.save(self.session, '{}/{}.ckpt'.format(directory, 'model'))
-        pickle.dump(self.print, open('{}/{}.pkl'.format(directory, 'trainer'), 'wb'))
+        model_name = 'model'
+        trainer_name = 'trainer'
+        if is_best:
+            model_name += '_best'
+            trainer_name += '_best'
+        saver.save(self.session, '{}/{}.ckpt'.format(directory, model_name))
+        pickle.dump(self.print, open('{}/{}.pkl'.format(directory, trainer_name), 'wb'))
         self.log('Model saved in {}!'.format(directory))
 
     def load(self, directory):
@@ -143,7 +148,7 @@ class Trainer:
                                     start_time, last_epoch_start_time, _eval_update)
 
                 if best_fn is not None and (True if best_model_value is None else best_fn(result) > best_model_value):
-                    self.save(directory)
+                    self.save(directory, is_best=True)
                     best_model_value = best_fn(result)
                     no_improvements = 0
                 elif look_ahead is not None and no_improvements < look_ahead:
