@@ -4,7 +4,7 @@ import tensorflow as tf
 class GraphGANOptimizer(object):
 
     def __init__(self, model, learning_rate=1e-3, feature_matching=True):
-        self.la = tf.placeholder_with_default(1., shape=())
+        self.la = tf.placeholder_with_default(0., shape=())
 
         with tf.name_scope('losses'):
             eps = tf.random_uniform(tf.shape(model.logits_real)[:1], dtype=model.logits_real.dtype)

@@ -16,18 +16,19 @@ from models import encoder_rgcn, decoder_adj, decoder_dot, decoder_rnn
 
 from optimizers.gan import GraphGANOptimizer
 
-batch_dim = 5120
-la = 1
+batch_dim = 32
+la = 0.5
 dropout = 0
 n_critic = 5
-metric = 'validity,sas'
+metric = 'qed'
 n_samples = 5000
 z_dim = 8
-epochs = 1000
+epochs = 300
 save_every = 20
 
 data = SparseMolecularDataset()
-data.load('../MolGAN-pytorch/data/gdb9_9nodes.sparsedataset')
+# data.load('../MolGAN-pytorch/data/gdb9_9nodes.sparsedataset')
+data.load('../MolGAN-pytorch/data/qm9_5k.sparsedataset')
 
 steps = (len(data) // batch_dim)
 
@@ -222,7 +223,7 @@ trainer.train(batch_dim=batch_dim,
               test_feed_dict=test_feed_dict,
               save_every=save_every,
               best_fn=best_fn,
-              directory='../MolGAN_TF_exps',
+              directory='../MolGAN_TF_exps/QM9_5k_lam_1',
               # here users need to first create and then specify a folder where to save the model
               _eval_update=_eval_update,
               _test_update=_test_update)
